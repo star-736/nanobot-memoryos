@@ -53,8 +53,10 @@ class AgentLoop:
         restrict_to_workspace: bool = False,
         session_manager: SessionManager | None = None,
         mcp_servers: dict | None = None,
+        memory_config: "MemoryConfig | None" = None,
     ):
         from nanobot.config.schema import ExecToolConfig
+        from nanobot.config.schema import MemoryConfig
         from nanobot.cron.service import CronService
         self.bus = bus
         self.provider = provider
@@ -68,6 +70,7 @@ class AgentLoop:
         self.exec_config = exec_config or ExecToolConfig()
         self.cron_service = cron_service
         self.restrict_to_workspace = restrict_to_workspace
+        self.memory_config = memory_config or MemoryConfig()
 
         self.context = ContextBuilder(workspace)
         self.sessions = session_manager or SessionManager(workspace)
