@@ -91,11 +91,18 @@ class AgentLoop:
     def _create_memory_backend(self) -> MemoryBackend:
         """Create memory backend based on config, with safe fallback."""
         backend = (self.memory_config.backend or "legacy").strip().lower()
+        if backend not in {"legacy", "memoryos"}:
+            logger.warning(f"Unknown memory backend '{backend}', using legacy memory")
+            return LegacyMemoryBackend(self.workspace)
+
         if backend == "memoryos":
             try:
                 cfg = self.memory_config.memoryos.model_dump() if self.memory_config.memoryos else {}
                 api_key = cfg.get("openai_api_key") or getattr(self.provider, "api_key", None)
                 api_base = cfg.get("openai_base_url") or getattr(self.provider, "api_base", None)
+                if not api_key:
+                    logger.warning("MemoryOS backend requested but no API key found, falling back to legacy memory")
+                    return LegacyMemoryBackend(self.workspace)
                 return MemoryOSBackend(
                     self.workspace,
                     default_model=self.model,
