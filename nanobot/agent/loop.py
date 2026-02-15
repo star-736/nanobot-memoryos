@@ -18,7 +18,7 @@ from nanobot.agent.tools.web import WebSearchTool, WebFetchTool
 from nanobot.agent.tools.message import MessageTool
 from nanobot.agent.tools.spawn import SpawnTool
 from nanobot.agent.tools.cron import CronTool
-from nanobot.agent.memory import MemoryStore
+from nanobot.agent.memory_backend import LegacyMemoryBackend, MemoryBackend, MemoryOSBackend
 from nanobot.agent.subagent import SubagentManager
 from nanobot.session.manager import Session, SessionManager
 
@@ -83,9 +83,29 @@ class AgentLoop:
             exec_config=self.exec_config,
             restrict_to_workspace=restrict_to_workspace,
         )
+        self.memory_backend = self._create_memory_backend()
         
         self._running = False
         self._register_default_tools()
+
+    def _create_memory_backend(self) -> MemoryBackend:
+        """Create memory backend based on config, with safe fallback."""
+        backend = (self.memory_config.backend or "legacy").strip().lower()
+        if backend == "memoryos":
+            try:
+                cfg = self.memory_config.memoryos.model_dump() if self.memory_config.memoryos else {}
+                api_key = cfg.get("openai_api_key") or getattr(self.provider, "api_key", None)
+                api_base = cfg.get("openai_base_url") or getattr(self.provider, "api_base", None)
+                return MemoryOSBackend(
+                    self.workspace,
+                    default_model=self.model,
+                    api_key=api_key,
+                    api_base=api_base,
+                    memoryos_config=cfg,
+                )
+            except Exception as e:
+                logger.warning(f"MemoryOS backend unavailable, falling back to legacy memory: {e}")
+        return LegacyMemoryBackend(self.workspace)
     
     def _register_default_tools(self) -> None:
         """Register the default set of tools."""
@@ -286,6 +306,7 @@ class AgentLoop:
         session.add_message("assistant", final_content,
                             tools_used=tools_used if tools_used else None)
         self.sessions.save(session)
+        self.memory_backend.add_turn(msg.content, final_content, session_key=key)
         
         return OutboundMessage(
             channel=msg.channel,
@@ -344,7 +365,7 @@ class AgentLoop:
             archive_all: If True, clear all messages and reset session (for /new command).
                        If False, only write to files without modifying session.
         """
-        memory = MemoryStore(self.workspace)
+        memory = self.memory_backend
 
         if archive_all:
             old_messages = session.messages
