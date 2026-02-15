@@ -48,6 +48,10 @@ dev = [
     "pytest-asyncio>=0.21.0",
     "ruff>=0.1.0",
 ]
+memoryos = [
+    "faiss-cpu>=1.7.4,<2.0.0",
+    "sentence-transformers>=3.0.0",
+]
 
 [project.scripts]
 nanobot = "nanobot.cli.commands:app"

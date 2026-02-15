@@ -1,0 +1,28 @@
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install base dependencies first (cached layer)
+COPY pyproject.toml README.md LICENSE ./
+RUN mkdir -p nanobot && touch nanobot/__init__.py && \
+    uv pip install --system --no-cache . && \
+    rm -rf nanobot
+
+# Copy source and install project + optional memoryos deps
+COPY nanobot/ nanobot/
+RUN uv pip install --system --no-cache .
+
+# Install CPU-only torch first, then memoryos extra deps
+RUN uv pip install --system --no-cache --index-url https://download.pytorch.org/whl/cpu torch==2.5.1+cpu && \
+    uv pip install --system --no-cache ".[memoryos]"
+
+RUN mkdir -p /root/.nanobot
+
+EXPOSE 18790
+
+ENTRYPOINT ["nanobot"]
+CMD ["status"]

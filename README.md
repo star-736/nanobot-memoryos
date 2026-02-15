@@ -799,7 +799,7 @@ nanobot cron remove <job_id>
 Build and run nanobot in a container:
 
 ```bash
-# Build the image
+# Build the standard (lightweight) image
 docker build -t nanobot .
 
 # Initialize config (first time only)
@@ -814,6 +814,17 @@ docker run -v ~/.nanobot:/root/.nanobot -p 18790:18790 nanobot gateway
 # Or run a single command
 docker run -v ~/.nanobot:/root/.nanobot --rm nanobot agent -m "Hello!"
 docker run -v ~/.nanobot:/root/.nanobot --rm nanobot status
+```
+
+If you enable `memory.backend=memoryos`, use the dedicated CPU image:
+
+```bash
+# Build MemoryOS image (includes CPU torch + memoryos optional deps)
+docker build -f Dockerfile.memoryos -t nanobot-memoryos .
+
+# Run with the same mounted config
+docker run -v ~/.nanobot:/root/.nanobot --rm nanobot-memoryos status
+docker run -v ~/.nanobot:/root/.nanobot --rm nanobot-memoryos agent -m "Hello!"
 ```
 
 ## 📁 Project Structure
