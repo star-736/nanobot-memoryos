@@ -17,6 +17,7 @@ from loguru import logger
 from nanobot import __version__
 from nanobot.agent.context import ContextBuilder
 from nanobot.agent.memory import MemoryConsolidator
+from nanobot.agent.memory_backend import LegacyMemoryBackend, MemoryBackend, MemoryOSBackend
 from nanobot.agent.subagent import SubagentManager
 from nanobot.agent.tools.cron import CronTool
 from nanobot.agent.skills import BUILTIN_SKILLS_DIR
@@ -99,7 +100,7 @@ class AgentLoop:
             exec_config=self.exec_config,
             restrict_to_workspace=restrict_to_workspace,
         )
-
+        self.memory_backend = self._create_memory_backend()
         self._running = False
         self._mcp_servers = mcp_servers or {}
         self._mcp_stack: AsyncExitStack | None = None
@@ -119,6 +120,24 @@ class AgentLoop:
         )
         self._register_default_tools()
 
+    def _create_memory_backend(self) -> MemoryBackend:
+        """Create memory backend based on config, with safe fallback."""
+        backend = (self.memory_config.backend or "legacy").strip().lower()
+        if backend == "memoryos":
+            try:
+                cfg = self.memory_config.memoryos.model_dump() if self.memory_config.memoryos else {}
+                api_key = cfg.get("openai_api_key") or getattr(self.provider, "api_key", None)
+                api_base = cfg.get("openai_base_url") or getattr(self.provider, "api_base", None)
+                return MemoryOSBackend(
+                    self.workspace,
+                    default_model=self.model,
+                    api_key=api_key,
+                    api_base=api_base,
+                    memoryos_config=cfg,
+                )
+            except Exception as e:
+                logger.warning(f"MemoryOS backend unavailable, falling back to legacy memory: {e}")
+        return LegacyMemoryBackend(self.workspace)
     def _register_default_tools(self) -> None:
         """Register the default set of tools."""
         allowed_dir = self.workspace if self.restrict_to_workspace else None
@@ -502,6 +521,7 @@ class AgentLoop:
 
         preview = final_content[:120] + "..." if len(final_content) > 120 else final_content
         logger.info("Response to {}:{}: {}", msg.channel, msg.sender_id, preview)
+        self.memory_backend.add_turn(msg.content, final_content, session_key=key)
         return OutboundMessage(
             channel=msg.channel, chat_id=msg.chat_id, content=final_content,
             metadata=msg.metadata or {},
