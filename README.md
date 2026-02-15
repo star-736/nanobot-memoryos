@@ -728,6 +728,12 @@ nanobot/
 └── cli/            # 🖥️ Commands
 ```
 
+## Upstream & License
+
+- Upstream project: [`HKUDS/nanobot`](https://github.com/HKUDS/nanobot)
+- This repository is a fork focused on MemoryOS-oriented deployment and Docker-first usage.
+- See `LICENSE` for license terms that apply to this repository.
+
 <p align="center">
   <sub>nanobot is for educational, research, and technical exchange purposes only</sub>
 </p>
