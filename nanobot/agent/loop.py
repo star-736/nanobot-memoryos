@@ -69,7 +69,8 @@ class AgentLoop:
         self.restrict_to_workspace = restrict_to_workspace
         self.memory_config = memory_config or MemoryConfig()
 
-        self.context = ContextBuilder(workspace)
+        self.memory_backend = self._create_memory_backend()
+        self.context = ContextBuilder(workspace, memory_backend=self.memory_backend)
         self.sessions = session_manager or SessionManager(workspace)
         self.tools = ToolRegistry()
         self.subagents = SubagentManager(
@@ -83,7 +84,6 @@ class AgentLoop:
             exec_config=self.exec_config,
             restrict_to_workspace=restrict_to_workspace,
         )
-        self.memory_backend = self._create_memory_backend()
         
         self._running = False
         self._register_default_tools()
