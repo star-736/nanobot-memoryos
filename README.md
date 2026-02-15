@@ -15,7 +15,17 @@ It keeps the lightweight agent core and adds an optional MemoryOS backend with s
 
 Primary target: run reliably with Docker on CPU, then connect through chat channels.
 
-## Key Features of nanobot:
+## What Changed from Upstream
+
+Compared with `HKUDS/nanobot`, this fork focuses on a simpler and more deployable stack:
+
+- Added optional `memory.backend=memoryos` support with structured memory components.
+- Kept `legacy` memory backend as fallback for safer runtime behavior.
+- Added `Dockerfile.memoryos` for CPU-oriented MemoryOS deployment.
+- Removed WhatsApp/bridge/Node-related integration path to reduce runtime complexity.
+- Cleaned unused assets and upstream demo/reference folders to keep the repo lean.
+
+## Features of nanobot-memoryos:
 
 🪶 **Ultra-Lightweight**: Just ~4,000 lines of core agent code — 99% smaller than Clawdbot.
 
