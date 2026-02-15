@@ -709,23 +709,20 @@ nanobot cron remove <job_id>
 ## 📁 Project Structure
 
 ```
-nanobot/
-├── agent/          # 🧠 Core agent logic
-│   ├── loop.py     #    Agent loop (LLM ↔ tool execution)
-│   ├── context.py  #    Prompt builder
-│   ├── memory.py   #    Persistent memory
-│   ├── skills.py   #    Skills loader
-│   ├── subagent.py #    Background task execution
-│   └── tools/      #    Built-in tools (incl. spawn)
-├── skills/         # 🎯 Bundled skills (github, weather, tmux...)
-├── channels/       # 📱 Chat channel integrations
-├── bus/            # 🚌 Message routing
-├── cron/           # ⏰ Scheduled tasks
-├── heartbeat/      # 💓 Proactive wake-up
-├── providers/      # 🤖 LLM providers (OpenRouter, etc.)
-├── session/        # 💬 Conversation sessions
-├── config/         # ⚙️ Configuration
-└── cli/            # 🖥️ Commands
+.
+├── nanobot/                  # core package
+│   ├── agent/                # loop, context, memory backend wiring
+│   ├── memoryos_core/        # vendored MemoryOS core modules
+│   ├── channels/             # Telegram/Feishu/Discord/...
+│   ├── providers/            # LLM provider registry + adapters
+│   ├── cli/                  # `nanobot` commands
+│   ├── config/               # config schema + loader
+│   ├── session/ cron/ bus/ heartbeat/
+│   └── skills/               # bundled skills
+├── Dockerfile                # standard lightweight image
+├── Dockerfile.memoryos       # MemoryOS CPU image
+├── pyproject.toml            # dependencies and extras
+└── workspace/                # local runtime files (generated)
 ```
 
 ## Upstream & License
@@ -735,7 +732,3 @@ nanobot/
 - [`BAI-LAB/MemoryOS`](https://github.com/BAI-LAB/MemoryOS)
 - This repository is a fork focused on MemoryOS-oriented deployment and Docker-first usage.
 - See `LICENSE` for license terms that apply to this repository.
-
-<p align="center">
-  <sub>nanobot is for educational, research, and technical exchange purposes only</sub>
-</p>
