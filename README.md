@@ -615,6 +615,35 @@ Config file: `~/.nanobot/config.json`
 | `zhipu` | LLM (Zhipu GLM) | [open.bigmodel.cn](https://open.bigmodel.cn) |
 | `vllm` | LLM (local, any OpenAI-compatible server) | — |
 
+### Memory Backend
+
+nanobot supports two memory backends:
+
+- `legacy` (default): `memory/MEMORY.md` + `memory/HISTORY.md`
+- `memoryos`: hierarchical memory with retrieval injection
+
+Example config:
+
+```json
+{
+  "memory": {
+    "backend": "memoryos",
+    "memoryos": {
+      "dataStoragePath": "~/.nanobot/workspace/memoryos_data",
+      "embeddingModelName": "all-MiniLM-L6-v2",
+      "shortTermCapacity": 10,
+      "midTermCapacity": 2000,
+      "retrievalQueueCapacity": 7,
+      "midTermHeatThreshold": 5.0,
+      "midTermSimilarityThreshold": 0.6,
+      "llmModel": ""
+    }
+  }
+}
+```
+
+`memoryos` uses OpenAI-compatible calls internally. It will use `memory.memoryos.openaiApiKey/openaiBaseUrl` when provided; otherwise it falls back to the active provider key/base.
+
 <details>
 <summary><b>Custom Provider (Any OpenAI-compatible API)</b></summary>
 
