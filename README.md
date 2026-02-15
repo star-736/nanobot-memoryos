@@ -730,7 +730,9 @@ nanobot/
 
 ## Upstream & License
 
-- Upstream project: [`HKUDS/nanobot`](https://github.com/HKUDS/nanobot)
+- Upstream projects:
+- [`HKUDS/nanobot`](https://github.com/HKUDS/nanobot)
+- [`BAI-LAB/MemoryOS`](https://github.com/BAI-LAB/MemoryOS)
 - This repository is a fork focused on MemoryOS-oriented deployment and Docker-first usage.
 - See `LICENSE` for license terms that apply to this repository.
 
