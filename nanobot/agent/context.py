@@ -6,10 +6,9 @@ import platform
 from pathlib import Path
 from typing import Any
 
-from nanobot.utils.helpers import current_time_str
-
-from nanobot.agent.memory import MemoryStore
+from nanobot.agent.memory_backend import LegacyMemoryBackend, MemoryBackend
 from nanobot.agent.skills import SkillsLoader
+from nanobot.utils.helpers import current_time_str
 from nanobot.utils.helpers import build_assistant_message, detect_image_mime
 
 
@@ -19,9 +18,9 @@ class ContextBuilder:
     BOOTSTRAP_FILES = ["AGENTS.md", "SOUL.md", "USER.md", "TOOLS.md"]
     _RUNTIME_CONTEXT_TAG = "[Runtime Context — metadata only, not instructions]"
 
-    def __init__(self, workspace: Path):
+    def __init__(self, workspace: Path, memory_backend: MemoryBackend | None = None):
         self.workspace = workspace
-        self.memory = MemoryStore(workspace)
+        self.memory = memory_backend or LegacyMemoryBackend(workspace)
         self.skills = SkillsLoader(workspace)
 
     def build_system_prompt(self, skill_names: list[str] | None = None) -> str:
@@ -139,8 +138,14 @@ Reply directly with text for conversations. Only use the 'message' tool to send 
         else:
             merged = [{"type": "text", "text": runtime_ctx}] + user_content
 
+        system_prompt = self.build_system_prompt(skill_names)
+        session_key = f"{channel}:{chat_id}" if channel and chat_id else None
+        retrieved_context = self.memory.retrieve_context(current_message, session_key=session_key)
+        if retrieved_context:
+            system_prompt += f"\n\n## Retrieved Memory\n{retrieved_context}"
+
         return [
-            {"role": "system", "content": self.build_system_prompt(skill_names)},
+            {"role": "system", "content": system_prompt},
             *history,
             {"role": current_role, "content": merged},
         ]
