@@ -108,6 +108,21 @@ cd nanobot-memoryos
 pip install -e .
 ```
 
+## ✅ Sanity Check
+
+Run these checks after configuration:
+
+```bash
+# Basic health check
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot-memoryos status
+
+# Basic response check
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot-memoryos agent -s memtest -m "Please remember: my code is ORANGE-7421."
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot-memoryos agent -s memtest -m "What is my code?"
+```
+
+Expected: second message should recall `ORANGE-7421` in the same session.
+
 ## 🖥️ Local Models (vLLM)
 
 Run nanobot with your own local models using vLLM or any OpenAI-compatible server.
