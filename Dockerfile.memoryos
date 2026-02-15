@@ -16,8 +16,8 @@ RUN mkdir -p nanobot && touch nanobot/__init__.py && \
 COPY nanobot/ nanobot/
 RUN uv pip install --system --no-cache .
 
-# Install CPU-only torch first, then memoryos extra deps
-RUN uv pip install --system --no-cache --index-url https://download.pytorch.org/whl/cpu torch==2.5.1+cpu && \
+# Install torch first, then memoryos extra deps
+RUN uv pip install --system --no-cache torch==2.5.1 && \
     uv pip install --system --no-cache ".[memoryos]"
 
 RUN mkdir -p /root/.nanobot
