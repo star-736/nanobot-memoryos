@@ -6,7 +6,7 @@ import platform
 from pathlib import Path
 from typing import Any
 
-from nanobot.agent.memory import MemoryStore
+from nanobot.agent.memory_backend import LegacyMemoryBackend, MemoryBackend
 from nanobot.agent.skills import SkillsLoader
 
 
@@ -20,9 +20,9 @@ class ContextBuilder:
     
     BOOTSTRAP_FILES = ["AGENTS.md", "SOUL.md", "USER.md", "TOOLS.md", "IDENTITY.md"]
     
-    def __init__(self, workspace: Path):
+    def __init__(self, workspace: Path, memory_backend: MemoryBackend | None = None):
         self.workspace = workspace
-        self.memory = MemoryStore(workspace)
+        self.memory = memory_backend or LegacyMemoryBackend(workspace)
         self.skills = SkillsLoader(workspace)
     
     def build_system_prompt(self, skill_names: list[str] | None = None) -> str:
@@ -150,6 +150,12 @@ To recall past events, grep {workspace_path}/memory/HISTORY.md"""
         system_prompt = self.build_system_prompt(skill_names)
         if channel and chat_id:
             system_prompt += f"\n\n## Current Session\nChannel: {channel}\nChat ID: {chat_id}"
+
+        session_key = f"{channel}:{chat_id}" if channel and chat_id else None
+        retrieved_context = self.memory.retrieve_context(current_message, session_key=session_key)
+        if retrieved_context:
+            system_prompt += f"\n\n## Retrieved Memory\n{retrieved_context}"
+
         messages.append({"role": "system", "content": system_prompt})
 
         # History

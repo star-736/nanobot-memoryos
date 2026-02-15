@@ -134,3 +134,44 @@ class MemoryOSBackend(MemoryBackend):
         except Exception:
             # Fail open: memory backend errors must not break response path.
             self._enabled = False
+
+    def retrieve_context(self, query: str, session_key: str | None = None) -> str:
+        if not self._enabled or not query.strip():
+            return ""
+        try:
+            instance = self._get_instance(session_key)
+            user_id = self._normalize_key(session_key)
+            result = instance.retriever.retrieve_context(user_query=query, user_id=user_id)
+
+            profile = instance.user_long_term_memory.get_raw_user_profile(user_id)
+            pages = result.get("retrieved_pages", [])[:3]
+            user_knowledge = result.get("retrieved_user_knowledge", [])[:5]
+            assistant_knowledge = result.get("retrieved_assistant_knowledge", [])[:5]
+
+            parts: list[str] = []
+            if profile and profile.lower() != "none":
+                parts.append(f"## User Profile\n{profile}")
+
+            if user_knowledge:
+                lines = "\n".join(f"- {k.get('knowledge', '')}" for k in user_knowledge if k.get("knowledge"))
+                if lines:
+                    parts.append(f"## User Knowledge\n{lines}")
+
+            if assistant_knowledge:
+                lines = "\n".join(f"- {k.get('knowledge', '')}" for k in assistant_knowledge if k.get("knowledge"))
+                if lines:
+                    parts.append(f"## Assistant Knowledge\n{lines}")
+
+            if pages:
+                lines = []
+                for page in pages:
+                    user_input = page.get("user_input", "")
+                    agent_response = page.get("agent_response", "")
+                    if user_input or agent_response:
+                        lines.append(f"- User: {user_input}\n  Assistant: {agent_response}")
+                if lines:
+                    parts.append("## Relevant Past Dialogues\n" + "\n".join(lines))
+
+            return "\n\n".join(parts)
+        except Exception:
+            return ""
