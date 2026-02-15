@@ -43,65 +43,70 @@ Compared with `HKUDS/nanobot`, this fork focuses on a simpler and more deployabl
   <img src="nanobot_arch.png" alt="nanobot architecture" width="800">
 </p>
 
-## 📦 Install
-
-**Install from source** (latest features, recommended for development)
-
-```bash
-git clone https://github.com/HKUDS/nanobot.git
-cd nanobot
-pip install -e .
-```
-
-**Install with [uv](https://github.com/astral-sh/uv)** (stable, fast)
-
-```bash
-uv tool install nanobot-ai
-```
-
-**Install from PyPI** (stable)
-
-```bash
-pip install nanobot-ai
-```
-
-## 🚀 Quick Start
+## 🚀 Quick Start (Docker First)
 
 > [!TIP]
-> Set your API key in `~/.nanobot/config.json`.
-> Get API keys: [OpenRouter](https://openrouter.ai/keys) (Global) · [Brave Search](https://brave.com/search/api/) (optional, for web search)
+> Always mount `~/.nanobot` into the container:
+> `-v ~/.nanobot:/root/.nanobot`
+> This keeps your config and workspace persistent across runs.
 
-**1. Initialize**
+### Path A: Standard lightweight image (`nanobot`)
 
 ```bash
-nanobot onboard
+# 1) Build
+docker build -t nanobot .
+
+# 2) Initialize config (first time only)
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot onboard
+
+# 3) Edit config and set provider API key + model
+vim ~/.nanobot/config.json
+
+# 4) Validate
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot status
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot agent -m "hello"
 ```
 
-**2. Configure** (`~/.nanobot/config.json`)
+### Path B: MemoryOS image (`nanobot-memoryos`, CPU)
 
-For OpenRouter - recommended for global users:
+```bash
+# 1) Build MemoryOS image
+docker build -f Dockerfile.memoryos -t nanobot-memoryos .
+
+# 2) Initialize config (first time only)
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot-memoryos onboard
+
+# 3) Edit config and enable memoryos backend
+vim ~/.nanobot/config.json
+```
+
+Minimal memory config:
+
 ```json
 {
-  "providers": {
-    "openrouter": {
-      "apiKey": "sk-or-v1-xxx"
-    }
-  },
-  "agents": {
-    "defaults": {
-      "model": "anthropic/claude-opus-4-5"
+  "memory": {
+    "backend": "memoryos",
+    "memoryos": {
+      "dataStoragePath": "/root/.nanobot/workspace/memoryos_data",
+      "embeddingModelName": "all-MiniLM-L6-v2"
     }
   }
 }
 ```
 
-**3. Chat**
-
 ```bash
-nanobot agent -m "What is 2+2?"
+# 4) Validate
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot-memoryos status
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot-memoryos agent -m "hello"
 ```
 
-That's it! You have a working AI assistant in 2 minutes.
+## 📦 Local Install (Optional)
+
+```bash
+git clone https://github.com/star-736/nanobot-memoryos.git
+cd nanobot-memoryos
+pip install -e .
+```
 
 ## 🖥️ Local Models (vLLM)
 
@@ -661,42 +666,6 @@ nanobot cron remove <job_id>
 ```
 
 </details>
-
-## 🐳 Docker
-
-> [!TIP]
-> The `-v ~/.nanobot:/root/.nanobot` flag mounts your local config directory into the container, so your config and workspace persist across container restarts.
-
-Build and run nanobot in a container:
-
-```bash
-# Build the standard (lightweight) image
-docker build -t nanobot .
-
-# Initialize config (first time only)
-docker run -v ~/.nanobot:/root/.nanobot --rm nanobot onboard
-
-# Edit config on host to add API keys
-vim ~/.nanobot/config.json
-
-# Run gateway (connects to enabled channels, e.g. Telegram/Discord/Mochat)
-docker run -v ~/.nanobot:/root/.nanobot -p 18790:18790 nanobot gateway
-
-# Or run a single command
-docker run -v ~/.nanobot:/root/.nanobot --rm nanobot agent -m "Hello!"
-docker run -v ~/.nanobot:/root/.nanobot --rm nanobot status
-```
-
-If you enable `memory.backend=memoryos`, use the dedicated CPU image:
-
-```bash
-# Build MemoryOS image (includes CPU torch + memoryos optional deps)
-docker build -f Dockerfile.memoryos -t nanobot-memoryos .
-
-# Run with the same mounted config
-docker run -v ~/.nanobot:/root/.nanobot --rm nanobot-memoryos status
-docker run -v ~/.nanobot:/root/.nanobot --rm nanobot-memoryos agent -m "Hello!"
-```
 
 ## 📁 Project Structure
 
