@@ -8,7 +8,6 @@
     <img src="https://img.shields.io/badge/docker-cpu_ready-2496ED?logo=docker&logoColor=white" alt="Docker CPU">
   </p>
 </div>
-
 `nanobot-memoryos` is a focused fork of `HKUDS/nanobot` for practical personal-agent deployment.
 
 It keeps the lightweight agent core and adds an optional MemoryOS backend with safe legacy fallback.
@@ -122,6 +121,14 @@ docker run --rm -v ~/.nanobot:/root/.nanobot nanobot-memoryos agent -s memtest -
 ```
 
 Expected: second message should recall `ORANGE-7421` in the same session.
+
+## 🔁 Fallback Behavior
+
+To keep runtime stable, memory backend selection is fail-safe:
+
+- If `memory.backend` is invalid, nanobot falls back to `legacy`.
+- If `memory.backend=memoryos` but MemoryOS initialization fails, nanobot falls back to `legacy`.
+- Fallback mode continues using file-based memory (`memory/MEMORY.md`, `memory/HISTORY.md`) instead of crashing.
 
 ## 🖥️ Local Models (vLLM)
 
