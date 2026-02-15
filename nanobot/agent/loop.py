@@ -67,9 +67,9 @@ class AgentLoop:
         session_manager: SessionManager | None = None,
         mcp_servers: dict | None = None,
         channels_config: ChannelsConfig | None = None,
+        memory_config: "MemoryConfig | None" = None,
     ):
-        from nanobot.config.schema import ExecToolConfig, WebSearchConfig
-
+        from nanobot.config.schema import ExecToolConfig, MemoryConfig, WebSearchConfig
         self.bus = bus
         self.channels_config = channels_config
         self.provider = provider
@@ -84,6 +84,7 @@ class AgentLoop:
         self.restrict_to_workspace = restrict_to_workspace
         self._start_time = time.time()
         self._last_usage: dict[str, int] = {}
+        self.memory_config = memory_config or MemoryConfig()
 
         self.context = ContextBuilder(workspace)
         self.sessions = session_manager or SessionManager(workspace)

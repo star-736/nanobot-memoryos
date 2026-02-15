@@ -143,6 +143,28 @@ class ToolsConfig(Base):
     mcp_servers: dict[str, MCPServerConfig] = Field(default_factory=dict)
 
 
+class MemoryOSConfig(BaseModel):
+    """MemoryOS backend configuration."""
+    data_storage_path: str = ""
+    short_term_capacity: int = 10
+    mid_term_capacity: int = 2000
+    long_term_knowledge_capacity: int = 100
+    retrieval_queue_capacity: int = 7
+    mid_term_heat_threshold: float = 5.0
+    mid_term_similarity_threshold: float = 0.6
+    embedding_model_name: str = "all-MiniLM-L6-v2"
+    embedding_model_kwargs: dict[str, str] | None = None
+    llm_model: str = ""
+    openai_api_key: str = ""
+    openai_base_url: str = ""
+
+
+class MemoryConfig(BaseModel):
+    """Memory backend configuration."""
+    backend: str = "legacy"  # legacy | memoryos
+    memoryos: MemoryOSConfig = Field(default_factory=MemoryOSConfig)
+
+
 class Config(BaseSettings):
     """Root configuration for nanobot."""
 
@@ -151,6 +173,7 @@ class Config(BaseSettings):
     providers: ProvidersConfig = Field(default_factory=ProvidersConfig)
     gateway: GatewayConfig = Field(default_factory=GatewayConfig)
     tools: ToolsConfig = Field(default_factory=ToolsConfig)
+    memory: MemoryConfig = Field(default_factory=MemoryConfig)
 
     @property
     def workspace_path(self) -> Path:
