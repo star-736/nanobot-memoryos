@@ -529,56 +529,73 @@ Simply send the command above to your nanobot (via CLI or any chat channel), and
 
 Config file: `~/.nanobot/config.json`
 
-### Providers
+### Minimal Config
 
-> [!TIP]
-> - **Groq** provides free voice transcription via Whisper. If configured, Telegram voice messages will be automatically transcribed.
-> - **Zhipu Coding Plan**: If you're on Zhipu's coding plan, set `"apiBase": "https://open.bigmodel.cn/api/coding/paas/v4"` in your zhipu provider config.
-> - **MiniMax (Mainland China)**: If your API key is from MiniMax's mainland China platform (minimaxi.com), set `"apiBase": "https://api.minimaxi.com/v1"` in your minimax provider config.
+Start from this minimal setup in `~/.nanobot/config.json`:
 
-| Provider | Purpose | Get API Key |
-|----------|---------|-------------|
-| `openrouter` | LLM (recommended, access to all models) | [openrouter.ai](https://openrouter.ai) |
-| `anthropic` | LLM (Claude direct) | [console.anthropic.com](https://console.anthropic.com) |
-| `openai` | LLM (GPT direct) | [platform.openai.com](https://platform.openai.com) |
-| `deepseek` | LLM (DeepSeek direct) | [platform.deepseek.com](https://platform.deepseek.com) |
-| `groq` | LLM + **Voice transcription** (Whisper) | [console.groq.com](https://console.groq.com) |
-| `gemini` | LLM (Gemini direct) | [aistudio.google.com](https://aistudio.google.com) |
-| `minimax` | LLM (MiniMax direct) | [platform.minimax.io](https://platform.minimax.io) |
-| `aihubmix` | LLM (API gateway, access to all models) | [aihubmix.com](https://aihubmix.com) |
-| `dashscope` | LLM (Qwen) | [dashscope.console.aliyun.com](https://dashscope.console.aliyun.com) |
-| `moonshot` | LLM (Moonshot/Kimi) | [platform.moonshot.cn](https://platform.moonshot.cn) |
-| `zhipu` | LLM (Zhipu GLM) | [open.bigmodel.cn](https://open.bigmodel.cn) |
-| `vllm` | LLM (local, any OpenAI-compatible server) | — |
+```json
+{
+  "agents": {
+    "defaults": {
+      "model": "z-ai/glm4.7"
+    }
+  },
+  "providers": {
+    "custom": {
+      "apiKey": "YOUR_API_KEY",
+      "apiBase": "https://integrate.api.nvidia.com/v1"
+    }
+  }
+}
+```
 
-### Memory Backend
+### MemoryOS Config
 
 nanobot supports two memory backends:
 
-- `legacy` (default): `memory/MEMORY.md` + `memory/HISTORY.md`
-- `memoryos`: hierarchical memory with retrieval injection
+- `legacy` (default): file-based `memory/MEMORY.md` + `memory/HISTORY.md`
+- `memoryos`: structured memory with retrieval injection
 
-Example config:
+Recommended MemoryOS config:
 
 ```json
 {
   "memory": {
     "backend": "memoryos",
     "memoryos": {
-      "dataStoragePath": "~/.nanobot/workspace/memoryos_data",
-      "embeddingModelName": "all-MiniLM-L6-v2",
-      "shortTermCapacity": 10,
-      "midTermCapacity": 2000,
-      "retrievalQueueCapacity": 7,
-      "midTermHeatThreshold": 5.0,
-      "midTermSimilarityThreshold": 0.6,
-      "llmModel": ""
+      "dataStoragePath": "/root/.nanobot/workspace/memoryos_data",
+      "embeddingModelName": "all-MiniLM-L6-v2"
     }
   }
 }
 ```
 
-`memoryos` uses OpenAI-compatible calls internally. It will use `memory.memoryos.openaiApiKey/openaiBaseUrl` when provided; otherwise it falls back to the active provider key/base.
+When using Docker, keep `dataStoragePath` as an absolute in-container path (for mounted persistence).
+
+### NVIDIA / OpenAI-Compatible Example
+
+`custom` provider works with NVIDIA's OpenAI-compatible endpoint:
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "model": "z-ai/glm4.7"
+    }
+  },
+  "providers": {
+    "custom": {
+      "apiKey": "nvapi-...",
+      "apiBase": "https://integrate.api.nvidia.com/v1"
+    }
+  },
+  "memory": {
+    "backend": "memoryos"
+  }
+}
+```
+
+You can switch model to `moonshotai/kimi-k2.5` or other OpenAI-compatible model names exposed by your provider endpoint.
 
 <details>
 <summary><b>Adding a New Provider (Developer Guide)</b></summary>
