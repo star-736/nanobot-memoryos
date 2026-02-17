@@ -1,40 +1,30 @@
 <div align="center">
   <img src="nanobot_logo.png" alt="nanobot" width="500">
-  <h1>nanobot: Ultra-Lightweight Personal AI Assistant</h1>
+  <h1>nanobot-memoryos</h1>
   <p>
-    <a href="https://pypi.org/project/nanobot-ai/"><img src="https://img.shields.io/pypi/v/nanobot-ai" alt="PyPI"></a>
-    <a href="https://pepy.tech/project/nanobot-ai"><img src="https://static.pepy.tech/badge/nanobot-ai" alt="Downloads"></a>
     <img src="https://img.shields.io/badge/python-≥3.11-blue" alt="Python">
     <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
-    <a href="./COMMUNICATION.md"><img src="https://img.shields.io/badge/Feishu-Group-E9DBFC?style=flat&logo=feishu&logoColor=white" alt="Feishu"></a>
-    <a href="./COMMUNICATION.md"><img src="https://img.shields.io/badge/WeChat-Group-C5EAB4?style=flat&logo=wechat&logoColor=white" alt="WeChat"></a>
-    <a href="https://discord.gg/MnCvHqpUGB"><img src="https://img.shields.io/badge/Discord-Community-5865F2?style=flat&logo=discord&logoColor=white" alt="Discord"></a>
+    <img src="https://img.shields.io/badge/memory-memoryos-orange" alt="MemoryOS">
+    <img src="https://img.shields.io/badge/docker-cpu_ready-2496ED?logo=docker&logoColor=white" alt="Docker CPU">
   </p>
 </div>
+`nanobot-memoryos` is a focused fork of `HKUDS/nanobot` for practical personal-agent deployment.
 
-🐈 **nanobot** is an **ultra-lightweight** personal AI assistant inspired by [OpenClaw](https://github.com/openclaw/openclaw) 
+It keeps the lightweight agent core and adds an optional MemoryOS backend with safe legacy fallback.
 
-⚡️ Delivers core agent functionality in just **~4,000** lines of code — **99% smaller** than Clawdbot's 430k+ lines.
+Primary target: run reliably with Docker on CPU, then connect through chat channels.
 
-📏 Real-time line count: **3,663 lines** (run `bash core_agent_lines.sh` to verify anytime)
+## What Changed from Upstream
 
-## 📢 News
+Compared with `HKUDS/nanobot`, this fork focuses on a simpler and more deployable stack:
 
-- **2026-02-14** 🔌 nanobot now supports MCP! See [MCP section](#mcp-model-context-protocol) for details.
-- **2026-02-13** 🎉 Released v0.1.3.post7 — includes security hardening and multiple improvements. All users are recommended to upgrade to the latest version. See [release notes](https://github.com/HKUDS/nanobot/releases/tag/v0.1.3.post7) for more details.
-- **2026-02-12** 🧠 Redesigned memory system — Less code, more reliable. Join the [discussion](https://github.com/HKUDS/nanobot/discussions/566) about it!
-- **2026-02-11** ✨ Enhanced CLI experience and added MiniMax support!
-- **2026-02-10** 🎉 Released v0.1.3.post6 with improvements! Check the updates [notes](https://github.com/HKUDS/nanobot/releases/tag/v0.1.3.post6) and our [roadmap](https://github.com/HKUDS/nanobot/discussions/431).
-- **2026-02-09** 💬 Added Slack, Email, and QQ support — nanobot now supports multiple chat platforms!
-- **2026-02-08** 🔧 Refactored Providers—adding a new LLM provider now takes just 2 simple steps! Check [here](#providers).
-- **2026-02-07** 🚀 Released v0.1.3.post5 with Qwen support & several key improvements! Check [here](https://github.com/HKUDS/nanobot/releases/tag/v0.1.3.post5) for details.
-- **2026-02-06** ✨ Added Moonshot/Kimi provider, Discord integration, and enhanced security hardening!
-- **2026-02-05** ✨ Added Feishu channel, DeepSeek provider, and enhanced scheduled tasks support!
-- **2026-02-04** 🚀 Released v0.1.3.post4 with multi-provider & Docker support! Check [here](https://github.com/HKUDS/nanobot/releases/tag/v0.1.3.post4) for details.
-- **2026-02-03** ⚡ Integrated vLLM for local LLM support and improved natural language task scheduling!
-- **2026-02-02** 🎉 nanobot officially launched! Welcome to try 🐈 nanobot!
+- Added optional `memory.backend=memoryos` support with structured memory components.
+- Kept `legacy` memory backend as fallback for safer runtime behavior.
+- Added `Dockerfile.memoryos` for CPU-oriented MemoryOS deployment.
+- Removed WhatsApp/bridge/Node-related integration path to reduce runtime complexity.
+- Cleaned unused assets and upstream demo/reference folders to keep the repo lean.
 
-## Key Features of nanobot:
+## Features of nanobot-memoryos:
 
 🪶 **Ultra-Lightweight**: Just ~4,000 lines of core agent code — 99% smaller than Clawdbot.
 
@@ -44,94 +34,101 @@
 
 💎 **Easy-to-Use**: One-click to deploy and you're ready to go.
 
+🧠 **MemoryOS-Enhanced Memory**: Supports `memory.backend=memoryos` for structured short/mid/long-term memory retrieval while preserving legacy memory fallback.
+
 ## 🏗️ Architecture
 
 <p align="center">
   <img src="nanobot_arch.png" alt="nanobot architecture" width="800">
 </p>
 
-## ✨ Features
-
-<table align="center">
-  <tr align="center">
-    <th><p align="center">📈 24/7 Real-Time Market Analysis</p></th>
-    <th><p align="center">🚀 Full-Stack Software Engineer</p></th>
-    <th><p align="center">📅 Smart Daily Routine Manager</p></th>
-    <th><p align="center">📚 Personal Knowledge Assistant</p></th>
-  </tr>
-  <tr>
-    <td align="center"><p align="center"><img src="case/search.gif" width="180" height="400"></p></td>
-    <td align="center"><p align="center"><img src="case/code.gif" width="180" height="400"></p></td>
-    <td align="center"><p align="center"><img src="case/scedule.gif" width="180" height="400"></p></td>
-    <td align="center"><p align="center"><img src="case/memory.gif" width="180" height="400"></p></td>
-  </tr>
-  <tr>
-    <td align="center">Discovery • Insights • Trends</td>
-    <td align="center">Develop • Deploy • Scale</td>
-    <td align="center">Schedule • Automate • Organize</td>
-    <td align="center">Learn • Memory • Reasoning</td>
-  </tr>
-</table>
-
-## 📦 Install
-
-**Install from source** (latest features, recommended for development)
-
-```bash
-git clone https://github.com/HKUDS/nanobot.git
-cd nanobot
-pip install -e .
-```
-
-**Install with [uv](https://github.com/astral-sh/uv)** (stable, fast)
-
-```bash
-uv tool install nanobot-ai
-```
-
-**Install from PyPI** (stable)
-
-```bash
-pip install nanobot-ai
-```
-
-## 🚀 Quick Start
+## 🚀 Quick Start (Docker First)
 
 > [!TIP]
-> Set your API key in `~/.nanobot/config.json`.
-> Get API keys: [OpenRouter](https://openrouter.ai/keys) (Global) · [Brave Search](https://brave.com/search/api/) (optional, for web search)
+> Always mount `~/.nanobot` into the container:
+> `-v ~/.nanobot:/root/.nanobot`
+> This keeps your config and workspace persistent across runs.
 
-**1. Initialize**
+### Path A: Standard lightweight image (`nanobot`)
 
 ```bash
-nanobot onboard
+# 1) Build
+docker build -t nanobot .
+
+# 2) Initialize config (first time only)
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot onboard
+
+# 3) Edit config and set provider API key + model
+vim ~/.nanobot/config.json
+
+# 4) Validate
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot status
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot agent -m "hello"
 ```
 
-**2. Configure** (`~/.nanobot/config.json`)
+### Path B: MemoryOS image (`nanobot-memoryos`, CPU)
 
-For OpenRouter - recommended for global users:
+```bash
+# 1) Build MemoryOS image
+docker build -f Dockerfile.memoryos -t nanobot-memoryos .
+
+# 2) Initialize config (first time only)
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot-memoryos onboard
+
+# 3) Edit config and enable memoryos backend
+vim ~/.nanobot/config.json
+```
+
+Minimal memory config:
+
 ```json
 {
-  "providers": {
-    "openrouter": {
-      "apiKey": "sk-or-v1-xxx"
-    }
-  },
-  "agents": {
-    "defaults": {
-      "model": "anthropic/claude-opus-4-5"
+  "memory": {
+    "backend": "memoryos",
+    "memoryos": {
+      "dataStoragePath": "/root/.nanobot/workspace/memoryos_data",
+      "embeddingModelName": "all-MiniLM-L6-v2"
     }
   }
 }
 ```
 
-**3. Chat**
-
 ```bash
-nanobot agent -m "What is 2+2?"
+# 4) Validate
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot-memoryos status
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot-memoryos agent -m "hello"
 ```
 
-That's it! You have a working AI assistant in 2 minutes.
+## 📦 Local Install (Optional)
+
+```bash
+git clone https://github.com/star-736/nanobot-memoryos.git
+cd nanobot-memoryos
+pip install -e .
+```
+
+## ✅ Sanity Check
+
+Run these checks after configuration:
+
+```bash
+# Basic health check
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot-memoryos status
+
+# Basic response check
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot-memoryos agent -s memtest -m "Please remember: my code is ORANGE-7421."
+docker run --rm -v ~/.nanobot:/root/.nanobot nanobot-memoryos agent -s memtest -m "What is my code?"
+```
+
+Expected: second message should recall `ORANGE-7421` in the same session.
+
+## 🔁 Fallback Behavior
+
+To keep runtime stable, memory backend selection is fail-safe:
+
+- If `memory.backend` is invalid, nanobot falls back to `legacy`.
+- If `memory.backend=memoryos` but MemoryOS initialization fails, nanobot falls back to `legacy`.
+- Fallback mode continues using file-based memory (`memory/MEMORY.md`, `memory/HISTORY.md`) instead of crashing.
 
 ## 🖥️ Local Models (vLLM)
 
@@ -172,13 +169,12 @@ nanobot agent -m "Hello from my local LLM!"
 
 ## 💬 Chat Apps
 
-Talk to your nanobot through Telegram, Discord, WhatsApp, Feishu, Mochat, DingTalk, Slack, Email, or QQ — anytime, anywhere.
+Talk to your nanobot through Telegram, Discord, Feishu, Mochat, DingTalk, Slack, Email, or QQ — anytime, anywhere.
 
 | Channel | Setup |
 |---------|-------|
 | **Telegram** | Easy (just a token) |
 | **Discord** | Easy (bot token + intents) |
-| **WhatsApp** | Medium (scan QR) |
 | **Feishu** | Medium (app credentials) |
 | **Mochat** | Medium (claw token + websocket) |
 | **DingTalk** | Medium (app credentials) |
@@ -316,43 +312,6 @@ If you prefer to configure manually, add the following to `~/.nanobot/config.jso
 **6. Run**
 
 ```bash
-nanobot gateway
-```
-
-</details>
-
-<details>
-<summary><b>WhatsApp</b></summary>
-
-Requires **Node.js ≥18**.
-
-**1. Link device**
-
-```bash
-nanobot channels login
-# Scan QR with WhatsApp → Settings → Linked Devices
-```
-
-**2. Configure**
-
-```json
-{
-  "channels": {
-    "whatsapp": {
-      "enabled": true,
-      "allowFrom": ["+1234567890"]
-    }
-  }
-}
-```
-
-**3. Run** (two terminals)
-
-```bash
-# Terminal 1
-nanobot channels login
-
-# Terminal 2
 nanobot gateway
 ```
 
@@ -592,82 +551,73 @@ Simply send the command above to your nanobot (via CLI or any chat channel), and
 
 Config file: `~/.nanobot/config.json`
 
-### Providers
+### Minimal Config
 
-> [!TIP]
-> - **Groq** provides free voice transcription via Whisper. If configured, Telegram voice messages will be automatically transcribed.
-> - **Zhipu Coding Plan**: If you're on Zhipu's coding plan, set `"apiBase": "https://open.bigmodel.cn/api/coding/paas/v4"` in your zhipu provider config.
-> - **MiniMax (Mainland China)**: If your API key is from MiniMax's mainland China platform (minimaxi.com), set `"apiBase": "https://api.minimaxi.com/v1"` in your minimax provider config.
+Start from this minimal setup in `~/.nanobot/config.json`:
 
-| Provider | Purpose | Get API Key |
-|----------|---------|-------------|
-| `custom` | Any OpenAI-compatible endpoint | — |
-| `openrouter` | LLM (recommended, access to all models) | [openrouter.ai](https://openrouter.ai) |
-| `anthropic` | LLM (Claude direct) | [console.anthropic.com](https://console.anthropic.com) |
-| `openai` | LLM (GPT direct) | [platform.openai.com](https://platform.openai.com) |
-| `deepseek` | LLM (DeepSeek direct) | [platform.deepseek.com](https://platform.deepseek.com) |
-| `groq` | LLM + **Voice transcription** (Whisper) | [console.groq.com](https://console.groq.com) |
-| `gemini` | LLM (Gemini direct) | [aistudio.google.com](https://aistudio.google.com) |
-| `minimax` | LLM (MiniMax direct) | [platform.minimax.io](https://platform.minimax.io) |
-| `aihubmix` | LLM (API gateway, access to all models) | [aihubmix.com](https://aihubmix.com) |
-| `dashscope` | LLM (Qwen) | [dashscope.console.aliyun.com](https://dashscope.console.aliyun.com) |
-| `moonshot` | LLM (Moonshot/Kimi) | [platform.moonshot.cn](https://platform.moonshot.cn) |
-| `zhipu` | LLM (Zhipu GLM) | [open.bigmodel.cn](https://open.bigmodel.cn) |
-| `vllm` | LLM (local, any OpenAI-compatible server) | — |
+```json
+{
+  "agents": {
+    "defaults": {
+      "model": "z-ai/glm4.7"
+    }
+  },
+  "providers": {
+    "custom": {
+      "apiKey": "YOUR_API_KEY",
+      "apiBase": "https://integrate.api.nvidia.com/v1"
+    }
+  }
+}
+```
 
-### Memory Backend
+### MemoryOS Config
 
 nanobot supports two memory backends:
 
-- `legacy` (default): `memory/MEMORY.md` + `memory/HISTORY.md`
-- `memoryos`: hierarchical memory with retrieval injection
+- `legacy` (default): file-based `memory/MEMORY.md` + `memory/HISTORY.md`
+- `memoryos`: structured memory with retrieval injection
 
-Example config:
+Recommended MemoryOS config:
 
 ```json
 {
   "memory": {
     "backend": "memoryos",
     "memoryos": {
-      "dataStoragePath": "~/.nanobot/workspace/memoryos_data",
-      "embeddingModelName": "all-MiniLM-L6-v2",
-      "shortTermCapacity": 10,
-      "midTermCapacity": 2000,
-      "retrievalQueueCapacity": 7,
-      "midTermHeatThreshold": 5.0,
-      "midTermSimilarityThreshold": 0.6,
-      "llmModel": ""
+      "dataStoragePath": "/root/.nanobot/workspace/memoryos_data",
+      "embeddingModelName": "all-MiniLM-L6-v2"
     }
   }
 }
 ```
 
-`memoryos` uses OpenAI-compatible calls internally. It will use `memory.memoryos.openaiApiKey/openaiBaseUrl` when provided; otherwise it falls back to the active provider key/base.
+When using Docker, keep `dataStoragePath` as an absolute in-container path (for mounted persistence).
 
-<details>
-<summary><b>Custom Provider (Any OpenAI-compatible API)</b></summary>
+### NVIDIA / OpenAI-Compatible Example
 
-If your provider is not listed above but exposes an **OpenAI-compatible API** (e.g. Together AI, Fireworks, Azure OpenAI, self-hosted endpoints), use the `custom` provider:
+`custom` provider works with NVIDIA's OpenAI-compatible endpoint:
 
 ```json
 {
-  "providers": {
-    "custom": {
-      "apiKey": "your-api-key",
-      "apiBase": "https://api.your-provider.com/v1"
-    }
-  },
   "agents": {
     "defaults": {
-      "model": "your-model-name"
+      "model": "z-ai/glm4.7"
     }
+  },
+  "providers": {
+    "custom": {
+      "apiKey": "nvapi-...",
+      "apiBase": "https://integrate.api.nvidia.com/v1"
+    }
+  },
+  "memory": {
+    "backend": "memoryos"
   }
 }
 ```
 
-> The `custom` provider routes through LiteLLM's OpenAI-compatible path. It works with any endpoint that follows the OpenAI chat completions API format. The model name is passed directly to the endpoint without any prefix.
-
-</details>
+You can switch model to `moonshotai/kimi-k2.5` or other OpenAI-compatible model names exposed by your provider endpoint.
 
 <details>
 <summary><b>Adding a New Provider (Developer Guide)</b></summary>
@@ -714,40 +664,6 @@ That's it! Environment variables, model prefixing, config matching, and `nanobot
 </details>
 
 
-### MCP (Model Context Protocol)
-
-> [!TIP]
-> The config format is compatible with Claude Desktop / Cursor. You can copy MCP server configs directly from any MCP server's README.
-
-nanobot supports [MCP](https://modelcontextprotocol.io/) — connect external tool servers and use them as native agent tools.
-
-Add MCP servers to your `config.json`:
-
-```json
-{
-  "tools": {
-    "mcpServers": {
-      "filesystem": {
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/dir"]
-      }
-    }
-  }
-}
-```
-
-Two transport modes are supported:
-
-| Mode | Config | Example |
-|------|--------|---------|
-| **Stdio** | `command` + `args` | Local process via `npx` / `uvx` |
-| **HTTP** | `url` | Remote endpoint (`https://mcp.example.com/sse`) |
-
-MCP tools are automatically discovered and registered on startup. The LLM can use them alongside built-in tools — no extra configuration needed.
-
-
-
-
 ### Security
 
 > For production deployments, set `"restrictToWorkspace": true` in your config to sandbox the agent.
@@ -769,7 +685,6 @@ MCP tools are automatically discovered and registered on startup. The LLM can us
 | `nanobot agent --logs` | Show runtime logs during chat |
 | `nanobot gateway` | Start the gateway |
 | `nanobot status` | Show status |
-| `nanobot channels login` | Link WhatsApp (scan QR) |
 | `nanobot channels status` | Show channel status |
 
 Interactive mode exits: `exit`, `quit`, `/exit`, `/quit`, `:q`, or `Ctrl+D`.
@@ -791,102 +706,29 @@ nanobot cron remove <job_id>
 
 </details>
 
-## 🐳 Docker
-
-> [!TIP]
-> The `-v ~/.nanobot:/root/.nanobot` flag mounts your local config directory into the container, so your config and workspace persist across container restarts.
-
-Build and run nanobot in a container:
-
-```bash
-# Build the standard (lightweight) image
-docker build -t nanobot .
-
-# Initialize config (first time only)
-docker run -v ~/.nanobot:/root/.nanobot --rm nanobot onboard
-
-# Edit config on host to add API keys
-vim ~/.nanobot/config.json
-
-# Run gateway (connects to enabled channels, e.g. Telegram/Discord/Mochat)
-docker run -v ~/.nanobot:/root/.nanobot -p 18790:18790 nanobot gateway
-
-# Or run a single command
-docker run -v ~/.nanobot:/root/.nanobot --rm nanobot agent -m "Hello!"
-docker run -v ~/.nanobot:/root/.nanobot --rm nanobot status
-```
-
-If you enable `memory.backend=memoryos`, use the dedicated CPU image:
-
-```bash
-# Build MemoryOS image (includes CPU torch + memoryos optional deps)
-docker build -f Dockerfile.memoryos -t nanobot-memoryos .
-
-# Run with the same mounted config
-docker run -v ~/.nanobot:/root/.nanobot --rm nanobot-memoryos status
-docker run -v ~/.nanobot:/root/.nanobot --rm nanobot-memoryos agent -m "Hello!"
-```
-
 ## 📁 Project Structure
 
 ```
-nanobot/
-├── agent/          # 🧠 Core agent logic
-│   ├── loop.py     #    Agent loop (LLM ↔ tool execution)
-│   ├── context.py  #    Prompt builder
-│   ├── memory.py   #    Persistent memory
-│   ├── skills.py   #    Skills loader
-│   ├── subagent.py #    Background task execution
-│   └── tools/      #    Built-in tools (incl. spawn)
-├── skills/         # 🎯 Bundled skills (github, weather, tmux...)
-├── channels/       # 📱 Chat channel integrations
-├── bus/            # 🚌 Message routing
-├── cron/           # ⏰ Scheduled tasks
-├── heartbeat/      # 💓 Proactive wake-up
-├── providers/      # 🤖 LLM providers (OpenRouter, etc.)
-├── session/        # 💬 Conversation sessions
-├── config/         # ⚙️ Configuration
-└── cli/            # 🖥️ Commands
+.
+├── nanobot/                  # core package
+│   ├── agent/                # loop, context, memory backend wiring
+│   ├── memoryos_core/        # vendored MemoryOS core modules
+│   ├── channels/             # Telegram/Feishu/Discord/...
+│   ├── providers/            # LLM provider registry + adapters
+│   ├── cli/                  # `nanobot` commands
+│   ├── config/               # config schema + loader
+│   ├── session/ cron/ bus/ heartbeat/
+│   └── skills/               # bundled skills
+├── Dockerfile                # standard lightweight image
+├── Dockerfile.memoryos       # MemoryOS CPU image
+├── pyproject.toml            # dependencies and extras
+└── workspace/                # local runtime files (generated)
 ```
 
-## 🤝 Contribute & Roadmap
+## Upstream & License
 
-PRs welcome! The codebase is intentionally small and readable. 🤗
-
-**Roadmap** — Pick an item and [open a PR](https://github.com/HKUDS/nanobot/pulls)!
-
-- [x] **Voice Transcription** — Support for Groq Whisper (Issue #13)
-- [ ] **Multi-modal** — See and hear (images, voice, video)
-- [ ] **Long-term memory** — Never forget important context
-- [ ] **Better reasoning** — Multi-step planning and reflection
-- [ ] **More integrations** — Calendar and more
-- [ ] **Self-improvement** — Learn from feedback and mistakes
-
-### Contributors
-
-<a href="https://github.com/HKUDS/nanobot/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=HKUDS/nanobot&max=100&columns=12&updated=20260210" alt="Contributors" />
-</a>
-
-
-## ⭐ Star History
-
-<div align="center">
-  <a href="https://star-history.com/#HKUDS/nanobot&Date">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HKUDS/nanobot&type=Date&theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HKUDS/nanobot&type=Date" />
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HKUDS/nanobot&type=Date" style="border-radius: 15px; box-shadow: 0 0 30px rgba(0, 217, 255, 0.3);" />
-    </picture>
-  </a>
-</div>
-
-<p align="center">
-  <em> Thanks for visiting ✨ nanobot!</em><br><br>
-  <img src="https://visitor-badge.laobi.icu/badge?page_id=HKUDS.nanobot&style=for-the-badge&color=00d4ff" alt="Views">
-</p>
-
-
-<p align="center">
-  <sub>nanobot is for educational, research, and technical exchange purposes only</sub>
-</p>
+- Upstream projects:
+- [`HKUDS/nanobot`](https://github.com/HKUDS/nanobot)
+- [`BAI-LAB/MemoryOS`](https://github.com/BAI-LAB/MemoryOS)
+- This repository is a fork focused on MemoryOS-oriented deployment and Docker-first usage.
+- See `LICENSE` for license terms that apply to this repository.
