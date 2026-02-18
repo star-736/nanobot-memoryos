@@ -18,6 +18,8 @@ build/
 venv/
 __pycache__/
 poetry.lock
+uv.lock
+.idea/
 .pytest_cache/
 botpy.log
 nano.*.save
