@@ -18,6 +18,7 @@ except ImportError:
     from long_term import LongTermMemory
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import numpy as np
 
 class Updater:
     def __init__(self, 
@@ -66,6 +67,56 @@ class Updater:
         """获取页面embedding的辅助方法"""
         from .utils import get_embedding
         return get_embedding(text)
+
+    def _assign_pages_to_summaries(self, pages, summaries):
+        """
+        Assign each page to exactly one summary by semantic similarity.
+        This avoids inserting the same page into multiple sessions.
+        """
+        if not summaries:
+            return {}
+        if len(summaries) == 1:
+            return {0: pages}
+
+        from .utils import get_embedding, normalize_vector
+
+        # Pre-compute summary embeddings.
+        summary_embeddings = []
+        for summary_item in summaries:
+            summary_text = summary_item.get("content") or summary_item.get("theme") or "General summary"
+            vec = get_embedding(
+                summary_text,
+                model_name=self.mid_term_memory.embedding_model_name,
+                **self.mid_term_memory.embedding_model_kwargs
+            )
+            summary_embeddings.append(normalize_vector(vec))
+
+        grouped_pages = {i: [] for i in range(len(summaries))}
+        for page in pages:
+            page_vec = page.get("page_embedding")
+            if page_vec:
+                page_vec = normalize_vector(page_vec)
+            else:
+                full_text = f"User: {page.get('user_input','')} Assistant: {page.get('agent_response','')}"
+                vec = get_embedding(
+                    full_text,
+                    model_name=self.mid_term_memory.embedding_model_name,
+                    **self.mid_term_memory.embedding_model_kwargs
+                )
+                page_vec = normalize_vector(vec)
+                page["page_embedding"] = page_vec.tolist()
+
+            best_idx = 0
+            best_score = -1.0
+            for idx, summary_vec in enumerate(summary_embeddings):
+                score = float(np.dot(summary_vec, page_vec))
+                if score > best_score:
+                    best_score = score
+                    best_idx = idx
+            grouped_pages[best_idx].append(page)
+
+        # Keep only non-empty groups.
+        return {idx: grp for idx, grp in grouped_pages.items() if grp}
 
     def _update_linked_pages_meta_info(self, start_page_id, new_meta_info):
         """
@@ -171,16 +222,23 @@ class Updater:
         
         # 3. Insert pages into MidTermMemory based on summaries
         if multi_summary_result and multi_summary_result.get("summaries"):
-            for summary_item in multi_summary_result["summaries"]:
+            summaries = [s for s in multi_summary_result["summaries"] if isinstance(s, dict)]
+            pages_by_summary = self._assign_pages_to_summaries(current_batch_pages, summaries)
+
+            for idx, summary_item in enumerate(summaries):
+                assigned_pages = pages_by_summary.get(idx, [])
+                if not assigned_pages:
+                    continue
+
                 theme_summary = summary_item.get("content", "General summary of recent interactions.")
                 theme_keywords = summary_item.get("keywords", [])
                 print(f"Updater: Processing theme '{summary_item.get('theme')}' for mid-term insertion.")
                 
-                # Pass the already processed pages (with IDs, embeddings to be added by MidTermMemory if not present)
+                # Insert only pages assigned to this theme to avoid duplicate insertion.
                 self.mid_term_memory.insert_pages_into_session(
                     summary_for_new_pages=theme_summary,
                     keywords_for_new_pages=theme_keywords,
-                    pages_to_insert=current_batch_pages, # These pages now have pre_page, next_page, meta_info set up
+                    pages_to_insert=assigned_pages, # These pages now have pre_page, next_page, meta_info set up
                     similarity_threshold=self.topic_similarity_threshold
                 )
         else:

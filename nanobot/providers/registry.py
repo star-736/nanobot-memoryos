@@ -90,6 +90,24 @@ PROVIDERS: tuple[ProviderSpec, ...] = (
         litellm_prefix="",
         is_direct=True,
     ),
+
+    # === Local OpenAI-compatible server (nano-vllm) ========================
+    ProviderSpec(
+        name="nano_vllm",
+        keywords=("nano-vllm", "nanovllm"),
+        env_key="OPENAI_API_KEY",
+        display_name="nano-vllm",
+        litellm_prefix="",
+        skip_prefixes=(),
+        env_extras=(),
+        is_gateway=False,
+        is_local=True,
+        detect_by_key_prefix="",
+        detect_by_base_keyword="",
+        default_api_base="",
+        strip_model_prefix=False,
+        model_overrides=(),
+    ),
     # === Gateways (detected by api_key / api_base, not model name) =========
     # Gateways can route any model, so they win in fallback.
     # OpenRouter: global gateway, keys start with "sk-or-"

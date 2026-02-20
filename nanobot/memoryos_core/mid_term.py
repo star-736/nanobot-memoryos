@@ -187,6 +187,59 @@ class MidTermMemory:
         # heapq.heapify(self.heap) # Not needed if pushing one by one
         # No save here, it's an internal operation often followed by other ops that save
 
+    def _merge_keywords_preserve_order(self, existing_keywords, new_keywords):
+        merged = []
+        seen = set()
+        for kw in (existing_keywords or []) + (new_keywords or []):
+            if not kw:
+                continue
+            k = str(kw).strip()
+            if not k:
+                continue
+            key = k.lower()
+            if key not in seen:
+                merged.append(k)
+                seen.add(key)
+        return merged
+
+    def _build_merged_summary_text(self, existing_summary, new_summary):
+        existing = (existing_summary or "").strip()
+        incoming = (new_summary or "").strip()
+
+        if existing and incoming:
+            if incoming.lower() in existing.lower():
+                merged = existing
+            elif existing.lower() in incoming.lower():
+                merged = incoming
+            else:
+                merged = f"{existing} | {incoming}"
+        else:
+            merged = existing or incoming or "General conversation segment."
+
+        # Keep summary compact to avoid unbounded growth.
+        return merged[:500]
+
+    def _refresh_session_summary_after_merge(self, session_obj, summary_for_new_pages, keywords_for_new_pages):
+        merged_summary = self._build_merged_summary_text(
+            session_obj.get("summary"),
+            summary_for_new_pages
+        )
+        merged_keywords = self._merge_keywords_preserve_order(
+            session_obj.get("summary_keywords", []),
+            keywords_for_new_pages or []
+        )
+
+        summary_vec = get_embedding(
+            merged_summary,
+            model_name=self.embedding_model_name,
+            **self.embedding_model_kwargs
+        )
+        summary_vec = normalize_vector(summary_vec).tolist()
+
+        session_obj["summary"] = merged_summary
+        session_obj["summary_keywords"] = merged_keywords
+        session_obj["summary_embedding"] = summary_vec
+
     def insert_pages_into_session(self, summary_for_new_pages, keywords_for_new_pages, pages_to_insert, 
                                   similarity_threshold=0.6, keyword_similarity_alpha=1.0):
         if not self.sessions: # If no existing sessions, just add as a new one
@@ -268,6 +321,12 @@ class MidTermMemory:
                 target_session["details"].append(processed_page)
                 processed_new_pages.append(processed_page)
 
+            # Keep session-level summary fields in sync after merge.
+            self._refresh_session_summary_after_merge(
+                target_session,
+                summary_for_new_pages=summary_for_new_pages,
+                keywords_for_new_pages=keywords_for_new_pages
+            )
             target_session["L_interaction"] += len(pages_to_insert)
             target_session["last_visit_time"] = get_timestamp() # Update last visit time on modification
             target_session["H_segment"] = compute_segment_heat(target_session)

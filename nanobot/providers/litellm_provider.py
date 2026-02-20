@@ -281,6 +281,9 @@ class LiteLLMProvider(LLMProvider):
         if self.api_base:
             kwargs["api_base"] = self.api_base
 
+        if self.provider_name in {"custom", "nano_vllm"}:
+            kwargs["custom_llm_provider"] = "openai"
+
         # Pass extra headers (e.g. APP-Code for AiHubMix)
         if self.extra_headers:
             kwargs["extra_headers"] = self.extra_headers

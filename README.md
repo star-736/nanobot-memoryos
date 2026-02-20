@@ -184,6 +184,12 @@ nanobot channels login
 > For other LLM providers, please see the [Providers](#providers) section.
 >
 > For web search capability setup, please see [Web Search](#web-search).
+> Always mount `~/.nanobot` into the container:
+> `-v ~/.nanobot:/root/.nanobot`
+> This keeps your config and workspace persistent across runs.
+>
+> If you want `Current Time` in system prompt to match your local timezone,
+> add `-e TZ=Asia/Shanghai` (or your own timezone) when running Docker.
 
 **1. Initialize**
 
@@ -220,13 +226,52 @@ Configure these **two parts** in your config (other options have defaults).
 }
 ```
 
-**3. Chat**
+**3. Validate**
 
 ```bash
 nanobot agent
+nanobot status
 ```
 
 That's it! You have a working AI assistant in 2 minutes.
+
+## 🔁 Fallback Behavior
+
+To keep runtime stable, memory backend selection is fail-safe:
+
+- If `memory.backend` is invalid, nanobot falls back to `legacy`.
+- If `memory.backend=memoryos` but MemoryOS initialization fails, nanobot falls back to `legacy`.
+- Fallback mode continues using file-based memory (`memory/MEMORY.md`, `memory/HISTORY.md`) instead of crashing.
+
+## 🖥️ Local Models
+
+Run nanobot with your own local models using either:
+
+- vLLM
+- nano-vllm (`server.py`)
+
+> [!TIP]
+> The `apiKey` can be any non-empty string for local servers that don't require authentication.
+
+### nano-vllm
+
+`nano_vllm` is available as an explicit OpenAI-compatible provider:
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "model": "nano-vllm"
+    }
+  },
+  "providers": {
+    "nanoVllm": {
+      "apiKey": "dummy",
+      "apiBase": "http://127.0.0.1:8000/v1"
+    }
+  }
+}
+```
 
 ## 💬 Chat Apps
 

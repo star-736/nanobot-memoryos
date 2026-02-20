@@ -22,11 +22,13 @@ class ContextBuilder:
         self.workspace = workspace
         self.memory = memory_backend or LegacyMemoryBackend(workspace)
         self.skills = SkillsLoader(workspace)
-
-    def build_system_prompt(self, skill_names: list[str] | None = None) -> str:
+    def build_system_prompt(
+        self,
+        skill_names: list[str] | None = None,
+        retrieved_memory: str | None = None,
+    ) -> str:
         """Build the system prompt from identity, bootstrap files, memory, and skills."""
         parts = [self._get_identity()]
-
         bootstrap = self._load_bootstrap_files()
         if bootstrap:
             parts.append(bootstrap)
@@ -35,6 +37,14 @@ class ContextBuilder:
         if memory:
             parts.append(f"# Memory\n\n{memory}")
 
+        if retrieved_memory:
+            parts.append(
+                "# Retrieved Memory\n\n"
+                "Treat retrieved memory as reference, not ground truth.\n"
+                "If it conflicts with recent conversation or current user input, prefer the latest user context.\n"
+                "Use only memory relevant to this query and keep time consistency.\n\n"
+                f"{retrieved_memory}"
+            )
         always_skills = self.skills.get_always_skills()
         if always_skills:
             always_content = self.skills.load_skills_for_context(always_skills)
@@ -138,11 +148,20 @@ Reply directly with text for conversations. Only use the 'message' tool to send 
         else:
             merged = [{"type": "text", "text": runtime_ctx}] + user_content
 
-        system_prompt = self.build_system_prompt(skill_names)
         session_key = f"{channel}:{chat_id}" if channel and chat_id else None
-        retrieved_context = self.memory.retrieve_context(current_message, session_key=session_key)
-        if retrieved_context:
-            system_prompt += f"\n\n## Retrieved Memory\n{retrieved_context}"
+        retrieved_context = self.memory.retrieve_context(
+            current_message,
+            session_key=session_key,
+            recent_history=history,
+        )
+
+        # System prompt
+        system_prompt = self.build_system_prompt(
+            skill_names=skill_names,
+            retrieved_memory=retrieved_context or None,
+        )
+        if channel and chat_id:
+            system_prompt += f"\n\n## Current Session\nChannel: {channel}\nChat ID: {chat_id}"
 
         return [
             {"role": "system", "content": system_prompt},
