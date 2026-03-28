@@ -164,26 +164,27 @@ class MemoryOSBackend(MemoryBackend):
             user_knowledge = result.get("retrieved_user_knowledge", [])
             assistant_knowledge = result.get("retrieved_assistant_knowledge", [])
 
-            # Build a normalized recent-context set to reduce duplicate injection:
-            # if retrieval text is already present in the current conversation window,
-            # skip it to avoid prompt bloat/repetition.
+            # Build the most recent user/assistant QA pairs from prompt history.
+            # Retrieved mid-term pages that duplicate one of these recent turns
+            # are skipped to avoid injecting the same exchange twice.
+            recent_qa_pairs = self._extract_recent_qa_pairs(recent_history or [], limit=10)
+
+            filtered_pages: list[dict[str, Any]] = []
+            for page in pages:
+                user_input = page.get("user_input", "")
+                agent_response = page.get("agent_response", "")
+                if not self._normalize_text(user_input) and not self._normalize_text(agent_response):
+                    continue
+                if self._page_matches_recent_qa(user_input, agent_response, recent_qa_pairs):
+                    continue
+                filtered_pages.append(page)
+
             recent_texts = [
                 self._normalize_text(m.get("content", ""))
                 for m in (recent_history or [])
                 if isinstance(m, dict) and m.get("content")
             ]
             recent_texts = [t for t in recent_texts if t]
-
-            filtered_pages: list[dict[str, Any]] = []
-            for page in pages:
-                user_input = page.get("user_input", "")
-                agent_response = page.get("agent_response", "")
-                key = self._normalize_text(f"{user_input}\n{agent_response}")
-                if not key:
-                    continue
-                if self._is_redundant_with_recent(key, recent_texts):
-                    continue
-                filtered_pages.append(page)
 
             filtered_user_knowledge: list[dict[str, Any]] = []
             for item in user_knowledge:
@@ -242,6 +243,83 @@ class MemoryOSBackend(MemoryBackend):
         text = (text or "").strip().lower()
         text = re.sub(r"\s+", " ", text)
         return text
+
+    @classmethod
+    def _matches_text(cls, left: str, right: str) -> bool:
+        left_norm = cls._normalize_text(left)
+        right_norm = cls._normalize_text(right)
+        if not left_norm or not right_norm:
+            return False
+        return (
+            left_norm == right_norm
+            or left_norm in right_norm
+            or right_norm in left_norm
+        )
+
+    @classmethod
+    def _extract_recent_qa_pairs(
+        cls,
+        history: list[dict[str, Any]],
+        *,
+        limit: int,
+    ) -> list[tuple[str, str]]:
+        pairs: list[tuple[str, str]] = []
+        pending_user: str | None = None
+        pending_assistant: str | None = None
+
+        for message in history:
+            if not isinstance(message, dict):
+                continue
+
+            role = message.get("role")
+            content = message.get("content", "")
+            if isinstance(content, list):
+                text_parts = [
+                    str(block.get("text", ""))
+                    for block in content
+                    if isinstance(block, dict) and block.get("type") == "text"
+                ]
+                content = "\n".join(part for part in text_parts if part)
+            elif not isinstance(content, str):
+                content = str(content or "")
+
+            normalized = cls._normalize_text(content)
+            if not normalized:
+                continue
+
+            if role == "user":
+                if pending_user is not None and pending_assistant is not None:
+                    pairs.append((pending_user, pending_assistant))
+                pending_user = content
+                pending_assistant = None
+                continue
+
+            if role != "assistant":
+                continue
+
+            # Skip intermediate assistant tool-call stubs; we only want final text replies.
+            if message.get("tool_calls"):
+                continue
+
+            if pending_user is not None:
+                pending_assistant = content
+
+        if pending_user is not None and pending_assistant is not None:
+            pairs.append((pending_user, pending_assistant))
+
+        return pairs[-limit:]
+
+    @classmethod
+    def _page_matches_recent_qa(
+        cls,
+        user_input: str,
+        agent_response: str,
+        recent_qa_pairs: list[tuple[str, str]],
+    ) -> bool:
+        for recent_user, recent_assistant in recent_qa_pairs:
+            if cls._matches_text(user_input, recent_user) and cls._matches_text(agent_response, recent_assistant):
+                return True
+        return False
 
     @staticmethod
     def _is_redundant_with_recent(candidate: str, recent_texts: list[str]) -> bool:
