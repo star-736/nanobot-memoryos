@@ -636,7 +636,7 @@ def onboard(
         console.print("     Get one at: https://openrouter.ai/keys")
         console.print(f"  2. Chat: [cyan]{agent_cmd}[/cyan]")
     console.print(
-        "\n[dim]Want Telegram/WhatsApp? See: https://github.com/HKUDS/nanobot#-chat-apps[/dim]"
+        "\n[dim]Want Telegram or WeChat? See: https://github.com/HKUDS/nanobot#-chat-apps[/dim]"
     )
 
 
@@ -1610,7 +1610,7 @@ def channels_status(
 
 @channels_app.command("login")
 def channels_login(
-    channel_name: str = typer.Argument(..., help="Channel name (e.g. weixin, whatsapp)"),
+    channel_name: str = typer.Argument(..., help="Channel name (e.g. weixin, feishu)"),
     force: bool = typer.Option(False, "--force", "-f", help="Force re-authentication even if already logged in"),
     config_path: str | None = typer.Option(None, "--config", "-c", help="Path to config file"),
 ):

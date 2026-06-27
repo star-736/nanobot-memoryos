@@ -4474,7 +4474,6 @@ const AUTOMATION_CHANNEL_LABELS: Record<string, string> = {
   wechat: "WeChat",
   wecom: "WeCom",
   weixin: "WeChat",
-  whatsapp: "WhatsApp",
 };
 
 function parseAutomationSearchQuery(query: string): AutomationSearchToken[] {

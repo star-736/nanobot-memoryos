@@ -46,6 +46,7 @@ If you are not sure where a setting belongs, start from the task you are trying 
 | Enable voice transcription | `transcription.enabled`, `transcription.provider`, matching `providers.<name>.apiKey` | Send or upload a short voice message through a configured surface | [Transcription Settings](#transcription-settings) |
 | Enable web search or fetch | `tools.web.search.*`, `tools.web.fetch.*`, optional `tools.ssrfWhitelist` | Ask a question that requires current web information, then inspect logs if needed | [Web Tools](#web-tools), [Security](#security) |
 | Enable image generation | `tools.imageGeneration.enabled`, `tools.imageGeneration.provider`, `tools.imageGeneration.model`, matching provider credentials | Enable Image Generation in the WebUI and send one image request | [Image Generation](#image-generation) |
+| Enable MemoryOS retrieval | `memory.backend`, `memory.memoryos.*`, matching provider credentials | Start nanobot and check startup logs; ask about prior remembered facts after a few turns | [Memory Backend](#memory-backend), [Memory](./memory.md) |
 | Add external tools through MCP | `tools.mcpServers.<name>` | Start `nanobot gateway --verbose` and check startup/tool logs | [MCP](#mcp-model-context-protocol) |
 | Tighten tool and network safety | `tools.restrictToWorkspace`, `tools.exec.sandbox`, `tools.ssrfWhitelist`, `channels.*.allowFrom` | Run the same workflow through the channel or CLI you plan to expose | [Security](#security), [Pairing](#pairing) |
 | Tune request timeouts or process concurrency | `NANOBOT_LLM_TIMEOUT_S`, `NANOBOT_STREAM_IDLE_TIMEOUT_S`, `NANOBOT_MAX_CONCURRENT_REQUESTS` | Start nanobot from the same environment and inspect startup/runtime logs | [Runtime Environment Variables](#runtime-environment-variables) |
@@ -1974,6 +1975,45 @@ The heartbeat job is backed by the same cron service as user-created reminders. 
 | `gateway.heartbeat.enabled` | `true` | Register the built-in heartbeat cron job on gateway startup. |
 | `gateway.heartbeat.intervalS` | `1800` | Seconds between heartbeat checks. |
 | `gateway.heartbeat.keepRecentMessages` | `8` | Number of recent heartbeat-session messages to retain after each run. |
+
+
+## Memory Backend
+
+nanobot uses the file-backed `legacy` backend by default. This keeps the upstream Dream flow intact: session compaction writes summaries to `memory/history.jsonl`, and Dream curates `SOUL.md`, `USER.md`, and `memory/MEMORY.md`.
+
+This fork can also use `memoryos` for hierarchical retrieval. In that mode, nanobot still mirrors file memory for compatibility, but it stores completed user/assistant turns in MemoryOS and injects relevant retrieved context into the next system prompt.
+
+```json
+{
+  "memory": {
+    "backend": "memoryos",
+    "memoryos": {
+      "memoryScope": "global",
+      "memoryUserId": "owner",
+      "dataStoragePath": "~/.nanobot/workspace/memoryos_data",
+      "embeddingModelName": "all-MiniLM-L6-v2",
+      "shortTermCapacity": 10,
+      "midTermCapacity": 2000,
+      "longTermKnowledgeCapacity": 100,
+      "retrievalQueueCapacity": 7,
+      "midTermHeatThreshold": 5.0,
+      "midTermSimilarityThreshold": 0.6,
+      "llmModel": ""
+    }
+  }
+}
+```
+
+`memory.memoryos.openaiApiKey` and `memory.memoryos.openaiBaseUrl` are optional. If omitted, MemoryOS uses the active provider key/base URL.
+
+`memory.memoryos.memoryScope` controls how MemoryOS groups memories:
+
+| Value | Meaning |
+|-------|---------|
+| `session` | Isolate MemoryOS data by session/thread. |
+| `global` | Store turns in one shared MemoryOS user bucket, usually better for a single-user assistant across channels. |
+
+When `memoryScope` is `global`, `memoryUserId` selects the shared MemoryOS user id. The default is `owner`.
 
 
 ## Subagent Concurrency

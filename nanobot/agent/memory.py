@@ -807,6 +807,7 @@ class Consolidator:
             session_metadata=session.metadata,
             session_key=session.key,
             unified_session=self.unified_session,
+            include_retrieved_memory=False,
         )
         return estimate_prompt_tokens_chain(
             self.provider,

@@ -20,7 +20,7 @@ RUNTIME_CONTROL_MCP_RELOAD = "mcp_reload"
 class InboundMessage:
     """Message received from a chat channel."""
 
-    channel: str  # telegram, discord, slack, whatsapp
+    channel: str  # telegram, discord, slack, weixin
     sender_id: str  # User identifier
     chat_id: str  # Chat/channel identifier
     content: str  # Message text

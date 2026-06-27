@@ -538,8 +538,7 @@
         "telegram": "Telegram",
         "wechat": "WeChat",
         "wecom": "WeCom",
-        "weixin": "WeChat",
-        "whatsapp": "WhatsApp"
+        "weixin": "WeChat"
       },
       "schedule": {
         "at": "À {{time}}",

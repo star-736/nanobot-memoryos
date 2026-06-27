@@ -15,7 +15,7 @@ Use this page when you know what you want to run and need the command shape. For
 | Use WebUI or chat apps | `nanobot gateway` | Keep this terminal running, or use `nanobot gateway --background` |
 | Serve an OpenAI-compatible API | `nanobot serve` | Starts `/v1/chat/completions`, `/v1/models`, and `/health` |
 | Check chat channel setup | `nanobot channels status` | Useful before starting `nanobot gateway` |
-| Log in to QR/OAuth-style channels | `nanobot channels login <channel>` | Used by channels such as WhatsApp and WeChat |
+| Log in to QR/OAuth-style channels | `nanobot channels login <channel>` | Used by channels such as WeChat and Feishu |
 | Log in to OAuth model providers | `nanobot provider login <provider>` | Used by OAuth providers such as OpenAI Codex and GitHub Copilot |
 
 ## Global
@@ -163,7 +163,6 @@ Shows the default config path, workspace path, active model, and provider summar
 Examples:
 
 ```bash
-nanobot channels login whatsapp
 nanobot channels login weixin
 nanobot channels status
 ```

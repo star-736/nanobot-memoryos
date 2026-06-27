@@ -326,12 +326,6 @@ python -m pip install -e .
 nanobot --version
 ```
 
-If you use WhatsApp from a source checkout, keep the optional dependencies installed:
-
-```bash
-python -m pip install -e ".[whatsapp]"
-```
-
 ## First-Run Troubleshooting
 
 | Symptom | What to check |

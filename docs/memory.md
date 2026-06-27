@@ -19,6 +19,8 @@ It separates memory into layers, because different kinds of remembering deserve 
 
 This keeps the system light in the moment, but reflective over time.
 
+This fork also supports an optional `memoryos` backend. MemoryOS adds hierarchical retrieval on top of the normal file memory path: completed turns are mirrored into MemoryOS, relevant snippets are retrieved for future prompts, and the file-backed Dream system remains available for compatibility and auditability. See [Memory Backend](./configuration.md#memory-backend) for configuration.
+
 ## The Flow
 
 Memory moves through nanobot in two stages.

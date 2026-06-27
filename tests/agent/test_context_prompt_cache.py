@@ -327,12 +327,12 @@ def test_channel_format_hint_telegram(tmp_path) -> None:
     assert "messaging app" in prompt
 
 
-def test_channel_format_hint_whatsapp(tmp_path) -> None:
-    """WhatsApp should get plain-text format hint."""
+def test_channel_format_hint_sms(tmp_path) -> None:
+    """SMS should get plain-text format hint."""
     workspace = _make_workspace(tmp_path)
     builder = ContextBuilder(workspace)
 
-    prompt = builder.build_system_prompt(channel="whatsapp")
+    prompt = builder.build_system_prompt(channel="sms")
     assert "Format Hint" in prompt
     assert "plain text only" in prompt
 

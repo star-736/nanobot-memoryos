@@ -371,6 +371,32 @@ class ToolsConfig(Base):
     ssrf_whitelist: list[str] = Field(default_factory=list)  # CIDR ranges to exempt from SSRF blocking (e.g. ["100.64.0.0/10"] for Tailscale)
 
 
+class MemoryOSConfig(Base):
+    """MemoryOS backend configuration."""
+
+    memory_scope: Literal["session", "global"] = "session"
+    memory_user_id: str = "owner"
+    data_storage_path: str = ""
+    short_term_capacity: int = Field(default=10, ge=1)
+    mid_term_capacity: int = Field(default=2000, ge=1)
+    long_term_knowledge_capacity: int = Field(default=100, ge=1)
+    retrieval_queue_capacity: int = Field(default=7, ge=1)
+    mid_term_heat_threshold: float = Field(default=5.0, ge=0)
+    mid_term_similarity_threshold: float = Field(default=0.6, ge=0, le=1)
+    embedding_model_name: str = "all-MiniLM-L6-v2"
+    embedding_model_kwargs: dict[str, str] | None = None
+    llm_model: str = ""
+    openai_api_key: str = Field(default="", repr=False)
+    openai_base_url: str = ""
+
+
+class MemoryConfig(Base):
+    """Memory backend configuration."""
+
+    backend: Literal["legacy", "memoryos"] = "legacy"
+    memoryos: MemoryOSConfig = Field(default_factory=MemoryOSConfig)
+
+
 class Config(BaseSettings):
     """Root configuration for nanobot."""
 
@@ -381,6 +407,7 @@ class Config(BaseSettings):
     api: ApiConfig = Field(default_factory=ApiConfig)
     gateway: GatewayConfig = Field(default_factory=GatewayConfig)
     tools: ToolsConfig = Field(default_factory=ToolsConfig)
+    memory: MemoryConfig = Field(default_factory=MemoryConfig)
     model_presets: dict[str, ModelPresetConfig] = Field(
         default_factory=dict,
         validation_alias=AliasChoices("modelPresets", "model_presets"),

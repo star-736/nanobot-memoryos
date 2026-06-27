@@ -422,7 +422,7 @@ class TestToolEventProgress:
         loop.consolidator.maybe_consolidate_by_tokens = AsyncMock(return_value=False)  # type: ignore[method-assign]
 
         await loop._dispatch(InboundMessage(
-            channel="whatsapp",
+            channel="telegram",
             sender_id="u1",
             chat_id="chat1",
             content="say hello",

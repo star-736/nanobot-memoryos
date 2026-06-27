@@ -22,6 +22,7 @@ from nanobot.agent.context import ContextBuilder
 from nanobot.agent.cron_turns import CronTurnCoordinator
 from nanobot.agent.hook import AgentHook, CompositeHook
 from nanobot.agent.memory import Consolidator
+from nanobot.agent.memory_backend import LegacyMemoryBackend, MemoryBackend, MemoryOSBackend
 from nanobot.agent.progress_hook import AgentProgressHook
 from nanobot.agent.runner import _MAX_INJECTIONS_PER_TURN, AgentRunner, AgentRunSpec
 from nanobot.agent.subagent import SubagentManager
@@ -215,8 +216,9 @@ class AgentLoop:
         preset_snapshot_loader: preset_helpers.PresetSnapshotLoader | None = None,
         runtime_events: RuntimeEventBus | None = None,
         runtime_model_publisher: Callable[[str, str | None], None] | None = None,
+        memory_config: Any | None = None,
     ):
-        from nanobot.config.schema import ToolsConfig
+        from nanobot.config.schema import MemoryConfig, ToolsConfig
 
         _tc = tools_config or ToolsConfig()
         defaults = AgentDefaults()
@@ -232,6 +234,7 @@ class AgentLoop:
         self._default_selection_signature = preset_helpers.default_selection_signature(provider_signature)
         self.workspace = workspace
         self.model = model or provider.get_default_model()
+        self.memory_config = memory_config or MemoryConfig()
         self.max_iterations = (
             max_iterations if max_iterations is not None else defaults.max_tool_iterations
         )
@@ -270,7 +273,13 @@ class AgentLoop:
         self._last_usage: dict[str, int] = {}
         self._extra_hooks: list[AgentHook] = hooks or []
 
-        self.context = ContextBuilder(workspace, timezone=timezone, disabled_skills=disabled_skills)
+        self.memory_backend = self._create_memory_backend()
+        self.context = ContextBuilder(
+            workspace,
+            timezone=timezone,
+            disabled_skills=disabled_skills,
+            memory_backend=self.memory_backend,
+        )
         self.sessions = session_manager or SessionManager(workspace)
         self.tools = ToolRegistry()
         # One file-read/write tracker per logical session. The tool registry is
@@ -342,6 +351,32 @@ class AgentLoop:
         self.commands = CommandRouter()
         register_builtin_commands(self.commands)
 
+    def _create_memory_backend(self) -> MemoryBackend:
+        """Create the configured memory backend, falling back to file memory."""
+        backend = (self.memory_config.backend or "legacy").strip().lower()
+        if backend not in {"legacy", "memoryos"}:
+            logger.warning("Unknown memory backend {!r}; using legacy memory", backend)
+            return LegacyMemoryBackend(self.workspace)
+
+        if backend == "memoryos":
+            try:
+                cfg = self.memory_config.memoryos.model_dump() if self.memory_config.memoryos else {}
+                api_key = cfg.get("openai_api_key") or getattr(self.provider, "api_key", None)
+                api_base = cfg.get("openai_base_url") or getattr(self.provider, "api_base", None)
+                if not api_key:
+                    logger.warning("MemoryOS backend requested without API key; using legacy memory")
+                    return LegacyMemoryBackend(self.workspace)
+                return MemoryOSBackend(
+                    self.workspace,
+                    default_model=self.model,
+                    api_key=api_key,
+                    api_base=api_base,
+                    memoryos_config=cfg,
+                )
+            except Exception as exc:
+                logger.warning("MemoryOS backend unavailable; using legacy memory: {}", exc)
+        return LegacyMemoryBackend(self.workspace)
+
     @classmethod
     def from_config(
         cls,
@@ -394,6 +429,7 @@ class AgentLoop:
             tools_config=config.tools,
             model_presets=preset_helpers.configured_model_presets(config),
             model_preset=defaults.model_preset,
+            memory_config=config.memory,
             provider_snapshot_loader=provider_snapshot_loader,
             preset_snapshot_loader=preset_snapshot_loader,
             **extra,
@@ -421,6 +457,12 @@ class AgentLoop:
         self.runner.provider = provider
         self.subagents.set_provider(provider, model)
         self.consolidator.set_provider(provider, model, context_window_tokens)
+        if isinstance(self.memory_backend, MemoryOSBackend):
+            self.memory_backend.update_runtime(
+                default_model=model,
+                api_key=getattr(provider, "api_key", None),
+                api_base=getattr(provider, "api_base", None),
+            )
         self._provider_signature = snapshot.signature
         if publish_update and self._runtime_model_publisher is not None:
             self._runtime_model_publisher(
@@ -1351,6 +1393,8 @@ class AgentLoop:
         had_injections: bool,
         on_stream: Callable[[str], Awaitable[None]] | None,
         *,
+        session_key: str,
+        persist_memory: bool = True,
         turn_latency_ms: int | None = None,
     ) -> OutboundMessage | None:
         """Assemble the final outbound message from turn results."""
@@ -1361,6 +1405,8 @@ class AgentLoop:
 
         preview = final_content[:120] + "..." if len(final_content) > 120 else final_content
         logger.info("Response to {}:{}: {}", msg.channel, msg.sender_id, preview)
+        if persist_memory:
+            self.memory_backend.add_turn(msg.content, final_content, session_key=session_key)
 
         meta = dict(msg.metadata or {})
         if on_stream is not None and stop_reason not in {"error", "tool_error"}:
@@ -1573,6 +1619,8 @@ class AgentLoop:
             ctx.stop_reason,
             ctx.had_injections,
             ctx.on_stream,
+            session_key=ctx.session_key,
+            persist_memory=not ctx.ephemeral,
             turn_latency_ms=ctx.turn_latency_ms,
         )
         if ctx.ephemeral and ctx.outbound is not None:

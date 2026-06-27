@@ -83,6 +83,10 @@ msteams = [
     "PyJWT>=2.0,<3.0",
     "cryptography>=41.0",
 ]
+memoryos = [
+    "faiss-cpu>=1.7.4,<2.0.0",
+    "sentence-transformers>=3.0.0",
+]
 
 matrix = [
     "matrix-nio[e2e]>=0.25.2; sys_platform != 'win32'",
@@ -92,10 +96,6 @@ matrix = [
 ]
 discord = [
     "discord.py>=2.5.2,<3.0.0",
-]
-whatsapp = [
-    "neonize>=0.3.18.post0,<0.4.0",
-    "segno>=1.6.1,<2.0.0",
 ]
 langsmith = [
     "langsmith>=0.1.0",

@@ -225,7 +225,7 @@ Then check:
 | Unknown sender ignored | Configure `allowFrom`, pairing, or the channel-specific allow list. |
 | Telegram fails | Confirm the BotFather token and `allowFrom` user ID. |
 | Discord replies missing | Enable Message Content intent and invite the bot with the required permissions. |
-| WhatsApp or WeChat login expired | Re-run `nanobot channels login whatsapp` or `nanobot channels login weixin`. |
+| WeChat login expired | Re-run `nanobot channels login weixin`. |
 | Chat app works but WebUI does not | The provider and gateway are likely fine; debug the WebSocket channel separately. |
 
 See [`chat-apps.md`](./chat-apps.md) for channel-specific setup.

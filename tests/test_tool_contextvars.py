@@ -75,7 +75,7 @@ async def test_spawn_tool_keeps_task_local_context() -> None:
     tool = SpawnTool(_Manager())
 
     async def task_one() -> str:
-        tool.set_context(RequestContext(channel="whatsapp", chat_id="chat-a"))
+        tool.set_context(RequestContext(channel="telegram", chat_id="chat-a"))
         entered.set()
         await release.wait()
         return await tool.execute(task="one")
@@ -88,9 +88,9 @@ async def test_spawn_tool_keeps_task_local_context() -> None:
 
     result_one, result_two = await asyncio.gather(task_one(), task_two())
 
-    assert result_one == "whatsapp:chat-a:one"
+    assert result_one == "telegram:chat-a:one"
     assert result_two == "telegram:chat-b:two"
-    assert ("whatsapp", "chat-a", "whatsapp:chat-a") in seen
+    assert ("telegram", "chat-a", "telegram:chat-a") in seen
     assert ("telegram", "chat-b", "telegram:chat-b") in seen
 
 

@@ -32,7 +32,7 @@ nanobot channels status
 nanobot gateway
 ```
 
-7. Send a message from the allowed account. In group chats, follow that channel's `groupPolicy` behavior: many channels default to mention-only, while Matrix and WhatsApp default to open group replies.
+7. Send a message from the allowed account. In group chats, follow that channel's `groupPolicy` behavior: many channels default to mention-only, while Matrix defaults to open group replies.
 
 If `nanobot channels status` does not show the channel as enabled, the config snippet is in the wrong place, the channel name is misspelled, or the config file you edited is not the one nanobot is reading. If the channel is enabled but messages do not arrive, run `nanobot gateway --verbose` and compare the platform-side credentials, event permissions, and allow lists.
 
@@ -42,7 +42,6 @@ If `nanobot channels status` does not show the channel as enabled, the config sn
 |---------|---------------|
 | **Telegram** | Bot token from @BotFather |
 | **Discord** | Bot token + Message Content intent |
-| **WhatsApp** | QR code scan (`nanobot channels login whatsapp`) |
 | **WeChat (Weixin)** | QR code scan (`nanobot channels login weixin`) |
 | **Feishu** | QR code scan (`nanobot channels login feishu`) or App ID + App Secret |
 | **DingTalk** | App Key + App Secret |
@@ -296,82 +295,6 @@ python -m pip install "nanobot-ai[matrix]"
 
 ```bash
 nanobot gateway
-```
-
-</details>
-
-<details>
-<summary><b>WhatsApp</b></summary>
-
-Requires the WhatsApp optional dependencies:
-
-```bash
-pip install "nanobot-ai[whatsapp]"
-# Source checkout:
-python -m pip install -e ".[whatsapp]"
-```
-
-**1. Link device with QR**
-
-```bash
-nanobot channels login whatsapp
-# Scan QR with WhatsApp → Settings → Linked Devices
-```
-
-**2. Configure**
-
-```json
-{
-  "channels": {
-    "whatsapp": {
-      "enabled": true,
-      "allowFrom": ["1234567890"]
-    }
-  }
-}
-```
-
-Optional session database path:
-
-```json
-{
-  "channels": {
-    "whatsapp": {
-      "databasePath": "~/.nanobot/whatsapp-auth/neonize.db"
-    }
-  }
-}
-```
-
-**Migrating from the old bridge**
-
-- Remove `bridgeUrl` and `bridgeToken`; WhatsApp no longer runs a local Node.js bridge.
-- Re-run `nanobot channels login whatsapp`; old Baileys bridge auth data is not reused by neonize.
-- Update `allowFrom` entries to the WhatsApp sender ID without a leading `+`.
-
-**3. Run**
-
-```bash
-nanobot gateway
-```
-
-**Optional: static LID mappings**
-
-Modern WhatsApp can deliver a sender's LID instead of their phone number. nanobot
-learns LID to phone mappings at runtime when both identifiers are present, but you
-can also seed mappings up front so the phone number resolves from the
-very first message:
-
-```json
-{
-  "channels": {
-    "whatsapp": {
-      "enabled": true,
-      "allowFrom": ["1234567890"],
-      "lidMappings": { "123456789012345": "1234567890" }
-    }
-  }
-}
 ```
 
 </details>
