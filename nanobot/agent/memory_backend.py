@@ -9,6 +9,8 @@ from typing import Any
 from loguru import logger
 
 from nanobot.agent.memory import MemoryStore
+from nanobot.config.schema import MemoryConfig
+from nanobot.utils.llm_runtime import LLMRuntime
 
 
 class LegacyMemoryBackend:
@@ -19,6 +21,11 @@ class LegacyMemoryBackend:
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self.store, name)
+
+    def update_runtime(
+        self, *, default_model: str, api_key: str | None, api_base: str | None,
+    ) -> None:
+        pass
 
     @property
     def git(self):
@@ -51,6 +58,23 @@ class LegacyMemoryBackend:
 MemoryBackend = LegacyMemoryBackend
 
 
+def create_memory_backend(
+    workspace: Path, config: MemoryConfig, runtime: LLMRuntime,
+) -> LegacyMemoryBackend:
+    """Keep file memory available when optional MemoryOS cannot be configured."""
+    if config.backend == "memoryos":
+        cfg = config.memoryos.model_dump()
+        api_key = cfg.get("openai_api_key") or getattr(runtime.provider, "api_key", None)
+        api_base = cfg.get("openai_base_url") or getattr(runtime.provider, "api_base", None)
+        if api_key:
+            return MemoryOSBackend(
+                workspace, default_model=runtime.model, api_key=api_key,
+                api_base=api_base, memoryos_config=cfg,
+            )
+        logger.warning("MemoryOS requested without API key; using file memory")
+    return LegacyMemoryBackend(workspace)
+
+
 class MemoryOSBackend(LegacyMemoryBackend):
     """MemoryOS-backed memory adapter with safe fallback behavior."""
 
@@ -79,8 +103,8 @@ class MemoryOSBackend(LegacyMemoryBackend):
         api_key: str | None,
         api_base: str | None,
     ) -> None:
-        next_api_key = api_key or self.api_key
-        next_api_base = api_base or self.api_base
+        next_api_key = self.memoryos_config.get("openai_api_key") or api_key or ""
+        next_api_base = self.memoryos_config.get("openai_base_url") or api_base or ""
         if (
             default_model != self.default_model
             or next_api_key != self.api_key
